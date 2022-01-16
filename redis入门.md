@@ -193,5 +193,81 @@
    127.0.0.1:6379>
    ~~~
 
-## 6、Jedis
+## 6、Jedis使用
+
+### 1、导入maven依赖
+
+```xml
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>4.0.0</version>
+</dependency>
+```
+
+### 2、使用
+
+```java
+public class TestTransac {
+    public static void main(String[] args) {
+        Jedis jedis = new Jedis("127.0.0.1", 6379);
+        jedis.set("money", "100");
+        jedis.set("out","0");
+        //开启乐观锁
+        jedis.watch("money");
+        //开启事务
+        Transaction multi = jedis.multi();
+        try {
+            multi.decrBy("money",10);
+            multi.incrBy("out",10);
+            //执行事务
+            multi.exec();
+        }catch (Exception e) {
+            //如果报错则放弃事务，结束事务
+            multi.discard();
+            e.printStackTrace();
+        }finally {
+            System.out.println("money: "+jedis.get("money"));
+            System.out.println("out: " + jedis.get("out"));
+            jedis.close();
+        }
+    }
+}
+```
+
+## 7、Spring Boot整合redis
+
+### 1、导入maven依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+```
+
+### 2、使用
+
+```java
+@Autowired
+private RedisTemplate redisTemplate;
+
+@Test
+void contextLoads() {
+    /**
+     * redisTemplate 操作不同的数据类型，api和redis指令一样
+     * opsForValue 操作字符串，String
+     * opsForList 操作list，list
+     * opsForSet 操作set，set
+     * opsForHash 操作hash，hash
+     * opsForZset 操作Zset
+     * opsForGeo 操作geospatial
+     * opsForHyperLogLog
+     * opsForValue().setBit() 操作Bitmaps
+     */
+    ValueOperations value = redisTemplate.opsForValue();
+    value.set("name","吕竟");
+    System.out.println(value.get("name"));
+}
+```
 
