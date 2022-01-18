@@ -1,5 +1,9 @@
 package com.tuzhi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tuzhi.pojo.User;
+import com.tuzhi.util.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +16,8 @@ class SpringbootRedisApplicationTests {
 
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private RedisUtil redisUtil;
 
     @Test
     void contextLoads() {
@@ -27,8 +33,16 @@ class SpringbootRedisApplicationTests {
          * opsForValue().setBit() 操作Bitmaps
          */
         ValueOperations value = redisTemplate.opsForValue();
-        value.set("name","吕竟");
-        System.out.println(value.get("name"));
+        value.set("name1","吕竟");
+        System.out.println(value.get("name1"));
+    }
+
+    @Test
+    void test1() throws JsonProcessingException {
+        User user = new User("admin", "admin");
+        String s = new ObjectMapper().writeValueAsString(user);
+        redisUtil.set("user1",s);
+        redisUtil.get("user1");
     }
 
 }
